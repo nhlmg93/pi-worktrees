@@ -110,9 +110,8 @@ export async function createPiWorktreeConfigService() {
     await store.save('home');
   };
 
-  const worktrees = normalizeConfiguredWorktrees(store.config.worktrees);
-
   const current = (ctx: { cwd: string }) => {
+    const worktrees = normalizeConfiguredWorktrees(store.config.worktrees);
     const repo = getRemoteUrl(ctx.cwd);
     const resolution = matchRepo(repo, worktrees, store.config.matchingStrategy);
 
@@ -123,7 +122,7 @@ export async function createPiWorktreeConfigService() {
     const settings = resolution.settings;
     const project = getProjectName(ctx.cwd);
     const mainWorktree = getMainWorktreePath(ctx.cwd);
-    const parentDir = getWorktreeParentDir(ctx.cwd, worktrees, store.config.matchingStrategy);
+    const parentDir = getWorktreeParentDir(ctx.cwd, normalizeConfiguredWorktrees(store.config.worktrees), store.config.matchingStrategy);
 
     return {
       ...settings,
@@ -152,7 +151,9 @@ export async function createPiWorktreeConfigService() {
 
   const service = {
     ...store,
-    worktrees,
+    get worktrees() {
+      return normalizeConfiguredWorktrees(store.config.worktrees);
+    },
     current,
     save,
   };
